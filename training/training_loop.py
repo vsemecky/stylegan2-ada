@@ -20,6 +20,25 @@ from dnnlib.tflib.autosummary import autosummary
 
 from training import dataset
 
+import glob
+import re
+#-------------- functions from Miscellaneous
+
+def locate_latest_pkl(result_dir):
+    splitdir = os.path.split(result_dir)
+    result_dir = splitdir[0]
+    print('finding latest pickle file in - ',result_dir)
+    allpickles = sorted(glob.glob(os.path.join(result_dir, '0*', 'network-*.pkl')))
+    if len(allpickles) == 0:
+        return None, 0.0
+    latest_pickle = allpickles[-1]
+    resume_run_id = os.path.basename(os.path.dirname(latest_pickle))
+    RE_KIMG = re.compile('network-snapshot-(\d+).pkl')
+    kimg = int(RE_KIMG.match(os.path.basename(latest_pickle)).group(1))
+    print('latest pickle is - ',latest_pickle)
+    print('resuming from - ',kimg)
+    return (latest_pickle, float(kimg))
+
 #----------------------------------------------------------------------------
 # Select size and contents of the image snapshot grids that are exported
 # periodically during training.
@@ -101,7 +120,7 @@ def training_loop(
     D_reg_interval          = 16,       # How often the perform regularization for D? Ignored if lazy_regularization=False.
     total_kimg              = 25000,    # Total length of the training, measured in thousands of real images.
     kimg_per_tick           = 4,        # Progress snapshot interval.
-    image_snapshot_ticks    = 50,       # How often to save image snapshots? None = only save 'reals.png' and 'fakes-init.png'.
+    image_snapshot_ticks    = 50,       # How often to save image snapshots? None = only save 'reals.jpg' and 'fakes-init.jpg'.
     network_snapshot_ticks  = 50,       # How often to save network snapshots? None = only save 'networks-final.pkl'.
     resume_pkl              = None,     # Network pickle to resume training from.
     abort_fn                = None,     # Callback function for determining whether to abort training.
@@ -121,7 +140,12 @@ def training_loop(
         G = tflib.Network('G', num_channels=training_set.shape[0], resolution=training_set.shape[1], label_size=training_set.label_size, **G_args)
         D = tflib.Network('D', num_channels=training_set.shape[0], resolution=training_set.shape[1], label_size=training_set.label_size, **D_args)
         Gs = G.clone('Gs')
+        resume_kimg = 0
         if resume_pkl is not None:
+            #####
+            if resume_pkl == 'latest':
+                resume_pkl, resume_kimg = locate_latest_pkl(run_dir)
+            #####
             print(f'Resuming from "{resume_pkl}"')
             with dnnlib.util.open_url(resume_pkl) as f:
                 rG, rD, rGs = pickle.load(f)
@@ -133,10 +157,10 @@ def training_loop(
 
     print('Exporting sample images...')
     grid_size, grid_reals, grid_labels = setup_snapshot_image_grid(training_set)
-    save_image_grid(grid_reals, os.path.join(run_dir, 'reals.png'), drange=[0,255], grid_size=grid_size)
+    save_image_grid(grid_reals, os.path.join(run_dir, 'reals.jpg'), drange=[0,255], grid_size=grid_size)
     grid_latents = np.random.randn(np.prod(grid_size), *G.input_shape[1:])
     grid_fakes = Gs.run(grid_latents, grid_labels, is_validation=True, minibatch_size=minibatch_gpu)
-    save_image_grid(grid_fakes, os.path.join(run_dir, 'fakes_init.png'), drange=[-1,1], grid_size=grid_size)
+    save_image_grid(grid_fakes, os.path.join(run_dir, 'fakes_init.jpg'), drange=[-1,1], grid_size=grid_size)
 
     print(f'Replicating networks across {num_gpus} GPUs...')
     G_gpus = [G]
@@ -220,7 +244,9 @@ def training_loop(
         progress_fn(0, total_kimg)
     tick_start_time = time.time()
     maintenance_time = tick_start_time - start_time
-    cur_nimg = 0
+    #####
+    cur_nimg = int(resume_kimg * 1000)
+    #cur_nimg = 0
     cur_tick = -1
     tick_start_nimg = cur_nimg
     running_mb_counter = 0
@@ -301,7 +327,7 @@ def training_loop(
             # Save snapshots.
             if image_snapshot_ticks is not None and (done or cur_tick % image_snapshot_ticks == 0):
                 grid_fakes = Gs.run(grid_latents, grid_labels, is_validation=True, minibatch_size=minibatch_gpu)
-                save_image_grid(grid_fakes, os.path.join(run_dir, f'fakes{cur_nimg // 1000:06d}.png'), drange=[-1,1], grid_size=grid_size)
+                save_image_grid(grid_fakes, os.path.join(run_dir, f'fakes{cur_nimg // 1000:06d}.jpg'), drange=[-1,1], grid_size=grid_size)
             if network_snapshot_ticks is not None and (done or cur_tick % network_snapshot_ticks == 0):
                 pkl = os.path.join(run_dir, f'network-snapshot-{cur_nimg // 1000:06d}.pkl')
                 with open(pkl, 'wb') as f:
