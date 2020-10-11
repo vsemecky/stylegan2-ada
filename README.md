@@ -1,3 +1,8 @@
+## Updates from the original repo (proceed with caution):
+
+* **'latest' is now a resume option**: Use --resume="latest" to continue training from the last checkpoint.
+* **Image snapshot grids saved as JPGs**: Saving the image grids in the JPG format saves on memory.
+
 ## StyleGAN2 with adaptive discriminator augmentation (ADA)<br>&mdash; Official TensorFlow implementation
 
 ![Teaser image](./docs/stylegan2-ada-teaser-1024x252.png)
