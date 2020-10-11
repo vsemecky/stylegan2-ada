@@ -21,6 +21,7 @@ from training import training_loop
 from training import dataset
 from metrics import metric_defaults
 
+
 #----------------------------------------------------------------------------
 
 class UserError(Exception):
@@ -160,6 +161,7 @@ def setup_training_options(
     desc += f'-{cfg}'
 
     cfg_specs = {
+        'v100_16gb':     dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8), # uses mixed-precision, 11GB GPU
         'auto':          dict(ref_gpus=-1, kimg=25000,  mb=-1, mbstd=-1, fmaps=-1,  lrate=-1,     gamma=-1,   ema=-1,  ramp=0.05, map=2), # populated dynamically based on 'gpus' and 'res'
         'stylegan2':     dict(ref_gpus=8,  kimg=25000,  mb=32, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8), # uses mixed-precision, unlike original StyleGAN2
         'paper256':      dict(ref_gpus=8,  kimg=25000,  mb=64, mbstd=8,  fmaps=0.5, lrate=0.0025, gamma=1,    ema=20,  ramp=None, map=8),
@@ -391,6 +393,11 @@ def setup_training_options(
     elif resume in resume_specs:
         desc += f'-resume{resume}'
         args.resume_pkl = resume_specs[resume] # predefined url
+    #####
+    elif resume =='latest':
+        desc += '-resumelatest'
+        args.resume_pkl = 'latest'
+    ######
     else:
         desc += '-resumecustom'
         args.resume_pkl = resume # custom path or url
@@ -530,7 +537,7 @@ def main():
     group.add_argument('--metricdata', help='Dataset to evaluate metrics against (optional)', metavar='PATH')
 
     group = parser.add_argument_group('base config')
-    group.add_argument('--cfg',   help='Base config (default: auto)', choices=['auto', 'stylegan2', 'paper256', 'paper512', 'paper1024', 'cifar', 'cifarbaseline'])
+    group.add_argument('--cfg',   help='Base config (default: auto)', choices=['v100_16gb', 'auto', 'stylegan2', 'paper256', 'paper512', 'paper1024', 'cifar', 'cifarbaseline'])
     group.add_argument('--gamma', help='Override R1 gamma', type=float, metavar='FLOAT')
     group.add_argument('--kimg',  help='Override training duration', type=int, metavar='INT')
 
