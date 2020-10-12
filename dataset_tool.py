@@ -36,7 +36,7 @@ def error(msg):
 #----------------------------------------------------------------------------
 
 class TFRecordExporter:
-    def __init__(self, tfrecord_dir, expected_images, print_progress=True, progress_interval=10, tfr_prefix=None):
+    def __init__(self, tfrecord_dir, expected_images, res_log2=7, print_progress=True, progress_interval=10, tfr_prefix=None):
         self.tfrecord_dir       = tfrecord_dir
         if tfr_prefix is None:
             self.tfr_prefix = os.path.join(self.tfrecord_dir, os.path.basename(self.tfrecord_dir))
@@ -45,7 +45,8 @@ class TFRecordExporter:
         self.expected_images    = expected_images
         self.cur_images         = 0
         self.shape              = None
-        self.resolution_log2    = None
+        #self.resolution_log2    = None
+        self.res_log2 = res_log2
         self.tfr_writers        = []
         self.print_progress     = print_progress
         self.progress_interval  = progress_interval
@@ -77,13 +78,15 @@ class TFRecordExporter:
             print('%d / %d\r' % (self.cur_images, self.expected_images), end='', flush=True)
         if self.shape is None:
             self.shape = img.shape
-            self.resolution_log2 = int(np.log2(self.shape[1]))
+            #self.resolution_log2 = int(np.log2(self.shape[1]))
             assert self.shape[0] in [1, 3]
-            assert self.shape[1] == self.shape[2]
-            assert self.shape[1] == 2**self.resolution_log2
+            #assert self.shape[1] == self.shape[2]
+            #assert self.shape[1] == 2**self.resolution_log2
+            assert self.shape[1] % (2 ** self.res_log2) == 0
+            assert self.shape[2] % (2 ** self.res_log2) == 0
             tfr_opt = tf.io.TFRecordOptions(tf.compat.v1.io.TFRecordCompressionType.NONE)
-            for lod in range(self.resolution_log2 - 1):
-                tfr_file = self.tfr_prefix + '-r%02d.tfrecords' % (self.resolution_log2 - lod)
+            for lod in range(self.res_log2 - 1):
+                tfr_file = self.tfr_prefix + '-r%02d.tfrecords' % (self.res_log2 - lod)
                 self.tfr_writers.append(tf.io.TFRecordWriter(tfr_file, tfr_opt))
         assert img.shape == self.shape
         for lod, tfr_writer in enumerate(self.tfr_writers):
@@ -650,19 +653,21 @@ def create_celeba(tfrecord_dir, celeba_dir, cx=89, cy=121):
 
 #----------------------------------------------------------------------------
 
-def create_from_images(tfrecord_dir, image_dir, shuffle):
+def create_from_images(tfrecord_dir, image_dir, shuffle, res_log2=7):
     print('Loading images from "%s"' % image_dir)
     image_filenames = sorted(glob.glob(os.path.join(image_dir, '*')))
     if len(image_filenames) == 0:
         error('No input images found')
 
     img = np.asarray(PIL.Image.open(image_filenames[0]))
-    resolution = img.shape[0]
+    #resolution = img.shape[0]
     channels = img.shape[2] if img.ndim == 3 else 1
+    """
     if img.shape[1] != resolution:
         error('Input images must have the same width and height')
     if resolution != 2 ** int(np.floor(np.log2(resolution))):
         error('Input image resolution must be a power-of-two')
+    """
     if channels not in [1, 3]:
         error('Input images must be stored as RGB or grayscale')
 
@@ -945,6 +950,7 @@ def execute_cmdline(argv):
     p.add_argument(     'tfrecord_dir',     help='New dataset directory to be created')
     p.add_argument(     'image_dir',        help='Directory containing the images')
     p.add_argument(     '--shuffle',        help='Randomize image order (default: 1)', type=int, default=1)
+    p.add_argument(     '--res_log2',       help="image width and height should be multiple of 2**res_log2 (default: 7)", type=int, default=7)
 
     p = add_command(    'create_from_hdf5', 'Create dataset from legacy HDF5 archive.',
                                             'create_from_hdf5 datasets/celebahq ~/downloads/celeba-hq-1024x1024.h5')
