@@ -2,7 +2,7 @@
 
 * **Rectangular shapes other than squares now supported**:<br>
 
-    This is code adapted from other stylegan2 repos. I based it on skyflynil's code but all the repos have a similar base. Use --min_h, --min_w and --res_log2 (please note the underscore rather than hyphen).<br>
+    This is code adapted from other stylegan2 repos. I worked with skyflynil's code but all the repos have a similar base. Use --min_h, --min_w and --res_log2 (please note the underscore rather than hyphen).<br>
     
     384x256 = min_h = 2, min_w = 3, res_log2 = 7<br>
     640x384 = min_h = 3, min_w = 5, res_log2 = 7<br>
