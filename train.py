@@ -36,7 +36,12 @@ def setup_training_options(
 
     # Training dataset.
     data       = None, # Training dataset (required): <path>
-    res        = None, # Override dataset resolution: <int>, default = highest available
+
+    min_h = None,
+    min_w = None,
+    res_log2 = None,
+
+    #res        = None, # Override dataset resolution: <int>, default = highest available
     mirror     = None, # Augment dataset with x-flips: <bool>, default = False
 
     # Metrics (not included in desc).
@@ -104,12 +109,23 @@ def setup_training_options(
     with tf.Graph().as_default(), tflib.create_session().as_default(): # pylint: disable=not-context-manager
         args.train_dataset_args = dnnlib.EasyDict(path=data, max_label_size='full')
         dataset_obj = dataset.load_dataset(**args.train_dataset_args) # try to load the data and see what comes out
-        args.train_dataset_args.resolution = dataset_obj.shape[-1] # be explicit about resolution
+        #args.train_dataset_args.resolution = dataset_obj.shape[-1] # be explicit about resolution
         args.train_dataset_args.max_label_size = dataset_obj.label_size # be explicit about label size
         validation_set_available = dataset_obj.has_validation_set
         dataset_obj.close()
         dataset_obj = None
 
+
+
+    res_w = min_w * 2**res_log2
+    res_h = min_h * 2**res_log2
+
+    if res_w >= res_h:
+        res = res_w
+    else:
+        res = res_h
+    """
+    ##### Resolution changes
     if res is None:
         res = args.train_dataset_args.resolution
     else:
@@ -120,6 +136,7 @@ def setup_training_options(
             raise UserError(f'--res cannot exceed maximum available resolution in the dataset ({args.train_dataset_args.resolution})')
         desc += f'-res{res:d}'
     args.train_dataset_args.resolution = res
+    """
 
     if mirror is None:
         mirror = False
@@ -196,6 +213,10 @@ def setup_training_options(
     args.G_args.mapping_layers = spec.map
     args.G_args.num_fp16_res = args.D_args.num_fp16_res = 4 # enable mixed-precision training
     args.G_args.conv_clamp = args.D_args.conv_clamp = 256 # clamp activations to avoid float16 overflow
+
+    args.G_args.min_h = args.D_args.min_h = args.train_dataset_args.min_h = min_h
+    args.G_args.min_w = args.D_args.min_w = args.train_dataset_args.min_w = min_w
+    args.G_args.res_log2 = args.D_args.res_log2 = args.train_dataset_args.res_log2 = res_log2
 
     if cfg == 'cifar':
         args.loss_args.pl_weight = 0 # disable path length regularization
@@ -440,7 +461,11 @@ def run_training(outdir, seed, dry_run, **hyperparam_options):
     print(f'Output directory:  {training_options.run_dir}')
     print(f'Training data:     {training_options.train_dataset_args.path}')
     print(f'Training length:   {training_options.total_kimg} kimg')
-    print(f'Resolution:        {training_options.train_dataset_args.resolution}')
+    res_h = training_options.train_dataset_args.min_h * 2**training_options.train_dataset_args.res_log2
+    res_w = training_options.train_dataset_args.min_w * 2**training_options.train_dataset_args.res_log2
+    print(f'Height res: {res_h}')
+    print(f'Width res: {res_w}')
+    #print(f'Resolution Height:        {training_options.train_dataset_args.resolution}')
     print(f'Number of GPUs:    {training_options.num_gpus}')
     print()
 
@@ -529,7 +554,11 @@ def main():
 
     group = parser.add_argument_group('training dataset')
     group.add_argument('--data',   help='Training dataset path (required)', metavar='PATH', required=True)
-    group.add_argument('--res',    help='Dataset resolution (default: highest available)', type=int, metavar='INT')
+    ###
+    group.add_argument('--min_h', help='lowest dim of height', default=4, type=int, metavar='INT')
+    group.add_argument('--min_w', help='lowest dim of width', default=4, type=int, metavar='INT')
+    group.add_argument('--res_log2', help='multiplier for image size, the training image size (height, width) should be (min_h * 2**res_log2, min_w * 2**res_log2)', default=4, type=int, metavar='INT')
+    #group.add_argument('--res',    help='Dataset resolution (default: highest available)', type=int, metavar='INT')
     group.add_argument('--mirror', help='Augment dataset with x-flips (default: false)', type=_str_to_bool, metavar='BOOL')
 
     group = parser.add_argument_group('metrics')
