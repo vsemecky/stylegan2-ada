@@ -35,8 +35,6 @@ def locate_latest_pkl(result_dir):
     resume_run_id = os.path.basename(os.path.dirname(latest_pickle))
     RE_KIMG = re.compile('network-snapshot-(\d+).pkl')
     kimg = int(RE_KIMG.match(os.path.basename(latest_pickle)).group(1))
-    print('latest pickle is - ',latest_pickle)
-    print('resuming from - ',kimg)
     return (latest_pickle, float(kimg))
 
 #----------------------------------------------------------------------------
@@ -141,6 +139,7 @@ def training_loop(
         D = tflib.Network('D', num_channels=training_set.shape[0], resolution=training_set.shape[1], label_size=training_set.label_size, **D_args)
         Gs = G.clone('Gs')
         resume_kimg = 0
+        print('resume_pkl = ',resume_pkl)
         if resume_pkl is not None:
             #####
             if resume_pkl == 'latest':
