@@ -1,8 +1,22 @@
 ## Updates from the original repo (proceed with caution):
 
-* **'latest' is now a resume option**: Use --resume="latest" to continue training from the last checkpoint.
-* **Image snapshot grids saved as JPGs**: Saving the image grids in the JPG format saves on memory.
+* **Rectangular shapes other than squares now supported**:<br>
 
+    This is code adapted from other stylegan2 repos. I based it on skyflynil's code but all the repos have a similar base. Use --min_h, --min_w and --res_log2 (please note the underscore rather than hyphen).<br>
+    
+    384x256 = min_h = 2, min_w = 3, res_log2 = 7<br>
+    640x384 = min_h = 3, min_w = 5, res_log2 = 7<br>
+    1280x768 = min_h = 3, min_w = 5, res_log2 = 8<br>
+    
+* **Resume from latest checkpoint**:<br> 
+    
+    Use --resume="latest" to continue training from the last checkpoint.<br>
+    
+* **Image snapshot grids saved as JPGs**:<br>
+
+    Saving the image grids in the JPG format saves on memory.<br>
+    
+## ORIGINAL README:
 ## StyleGAN2 with adaptive discriminator augmentation (ADA)<br>&mdash; Official TensorFlow implementation
 
 ![Teaser image](./docs/stylegan2-ada-teaser-1024x252.png)
