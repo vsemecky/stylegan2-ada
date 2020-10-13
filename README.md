@@ -9,6 +9,8 @@
     512x640 = min_h = 5, min_w= 4, res_log2 = 7<br> 
     1280x768 = min_h = 3, min_w = 5, res_log2 = 8<br>
     
+    NOTE: The 'auto' config isn't working with nonsqaure models at the moment. Use 'v100_16gb', one of the others, or create your own in the train.py file.<br>
+    
 * **Resume from latest checkpoint**:<br> 
     
     Use --resume="latest" to continue training from the last checkpoint.<br>
