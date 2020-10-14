@@ -10,6 +10,9 @@
     1280x768 = min_h = 3, min_w = 5, res_log2 = 8<br>
     
     NOTE: The 'auto' config will use a lot of gpu memory and probably crash the training. Use 'v100_16gb', one of the others, or create your own in the train.py file.<br>
+* **Raw jpg option for datasets**:<br>
+    
+    The default is raw datasets. Use the option --use_raw=0 for normal datasets.<br>
     
 * **Resume from latest checkpoint**:<br> 
     
