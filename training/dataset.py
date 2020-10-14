@@ -85,6 +85,7 @@ class TFRecordDataset:
         buffer_mb       = 256,      # Read buffer size (megabytes).
         num_threads     = 2,        # Number of concurrent threads.
         _is_validation  = False,
+        use_raw = True,
 ):
         self.tfrecord_dir       = tfrecord_dir
         #self.resolution         = None
@@ -123,9 +124,14 @@ class TFRecordDataset:
         assert len(tfr_files) >= 1
         tfr_shapes = []
         for tfr_file in tfr_files:
-            tfr_opt = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.NONE)
+            tfr_opt = tf.python_io.TFRecordOptions(
+                tf.python_io.TFRecordCompressionType.NONE
+            )
             for record in tf.python_io.tf_record_iterator(tfr_file, tfr_opt):
-                tfr_shapes.append(self.parse_tfrecord_np(record).shape)
+                if use_raw:
+                    tfr_shapes.append(parse_tfrecord_np_raw(record))
+                else:
+                    tfr_shapes.append(parse_tfrecord_np(record).shape)
                 break
 
         # Autodetect label filename.
@@ -179,7 +185,11 @@ class TFRecordDataset:
             dset = tf.data.TFRecordDataset(
                 tfr_file, compression_type="", buffer_size=buffer_mb << 20
             )
-            dset = dset.map(parse_tfrecord_tf, num_parallel_calls=num_threads)
+            if use_raw:
+                dset = dset.map(parse_tfrecord_tf_raw, num_parallel_calls=num_threads)
+            else:
+                dset = dset.map(parse_tfrecord_tf, num_parallel_calls=num_threads)
+            #dset = dset.map(parse_tfrecord_tf, num_parallel_calls=num_threads)
             #dset = dset.map(parse_tfrecord_tf_raw, num_parallel_calls=num_threads)
             dset = tf.data.Dataset.zip((dset, self._tf_labels_dataset))
             bytes_per_item = np.prod(tfr_shape) * np.dtype(self.dtype).itemsize
@@ -285,12 +295,11 @@ class TFRecordDataset:
 #----------------------------------------------------------------------------
 # Construct a dataset object using the given options.
 
-def load_dataset(path=None, min_h=4, min_w=4, res_log2=7, max_images=None, max_label_size=0, mirror_augment=False, repeat=True, shuffle=True, seed=None):
+def load_dataset(path=None, use_raw=True, min_h=4, min_w=4, res_log2=7, max_images=None, max_label_size=0, mirror_augment=False, repeat=True, shuffle=True, seed=None):
     _ = seed
     assert os.path.isdir(path)
     return TFRecordDataset(
-        tfrecord_dir=path,
-        min_h=min_h, min_w=min_w, res_log2=res_log2, max_images=max_images, max_label_size=max_label_size,
+        tfrecord_dir=path, use_raw=use_raw, min_h=min_h, min_w=min_w, res_log2=res_log2, max_images=max_images, max_label_size=max_label_size,
         mirror_augment=mirror_augment, repeat=repeat, shuffle=shuffle)
 
 #----------------------------------------------------------------------------
