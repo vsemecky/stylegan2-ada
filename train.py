@@ -36,7 +36,7 @@ def setup_training_options(
 
     # Training dataset.
     data       = None, # Training dataset (required): <path>
-
+    use_raw = None,
     min_h = None,
     min_w = None,
     res_log2 = None,
@@ -106,8 +106,11 @@ def setup_training_options(
         raise UserError('--data must point to a directory containing *.tfrecords')
     desc = data_name
 
+
+
     with tf.Graph().as_default(), tflib.create_session().as_default(): # pylint: disable=not-context-manager
         args.train_dataset_args = dnnlib.EasyDict(path=data, max_label_size='full')
+        args.train_dataset_args.use_raw = use_raw
         dataset_obj = dataset.load_dataset(**args.train_dataset_args) # try to load the data and see what comes out
         #args.train_dataset_args.resolution = dataset_obj.shape[-1] # be explicit about resolution
         args.train_dataset_args.max_label_size = dataset_obj.label_size # be explicit about label size
@@ -116,27 +119,12 @@ def setup_training_options(
         dataset_obj = None
 
 
+    ### Set res to the longest side
 
-    res_w = min_w * 2**res_log2
-    res_h = min_h * 2**res_log2
-
-    if res_w >= res_h:
-        res = res_w
+    if min_w >= min_h:
+        res = min_w * 2**res_log2
     else:
-        res = res_h
-    """
-    ##### Resolution changes
-    if res is None:
-        res = args.train_dataset_args.resolution
-    else:
-        assert isinstance(res, int)
-        if not (res >= 4 and res & (res - 1) == 0):
-            raise UserError('--res must be a power of two and at least 4')
-        if res > args.train_dataset_args.resolution:
-            raise UserError(f'--res cannot exceed maximum available resolution in the dataset ({args.train_dataset_args.resolution})')
-        desc += f'-res{res:d}'
-    args.train_dataset_args.resolution = res
-    """
+        res = min_h * 2**res_log2
 
     if mirror is None:
         mirror = False
@@ -178,6 +166,8 @@ def setup_training_options(
     desc += f'-{cfg}'
 
     cfg_specs = {
+        'atari':     dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=0.5,   lrate=0.002,  gamma=1,   ema=20,  ramp=None, map=8),
+        'large':     dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
         'v100_16gb':     dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8), # uses mixed-precision, 11GB GPU
         'auto':          dict(ref_gpus=-1, kimg=25000,  mb=-1, mbstd=-1, fmaps=-1,  lrate=-1,     gamma=-1,   ema=-1,  ramp=0.05, map=2), # populated dynamically based on 'gpus' and 'res'
         'stylegan2':     dict(ref_gpus=8,  kimg=25000,  mb=32, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8), # uses mixed-precision, unlike original StyleGAN2
@@ -193,8 +183,8 @@ def setup_training_options(
     if cfg == 'auto':
         desc += f'{gpus:d}'
         spec.ref_gpus = gpus
-        spec.mb = max(min(gpus * min(4096 // res, 32), 64), gpus) # keep gpu memory consumption at bay
-        spec.mbstd = min(spec.mb // gpus, 4) # other hyperparams behave more predictably if mbstd group size remains fixed
+        spec.mb = 4 #max(min(gpus * min(4096 // res, 32), 64), gpus) # keep gpu memory consumption at bay
+        spec.mbstd = 4 #min(spec.mb // gpus, 4) # other hyperparams behave more predictably if mbstd group size remains fixed
         spec.fmaps = 1 if res >= 512 else 0.5
         spec.lrate = 0.002 if res >= 1024 else 0.0025
         spec.gamma = 0.0002 * (res ** 2) / spec.mb # heuristic formula
@@ -555,6 +545,7 @@ def main():
     group = parser.add_argument_group('training dataset')
     group.add_argument('--data',   help='Training dataset path (required)', metavar='PATH', required=True)
     ###
+    group.add_argument('--use_raw', help='Use raw image dataset, i.e. created from create_from_images_raw (default: %(default)s)', default=True, metavar='BOOL', type=_str_to_bool)
     group.add_argument('--min_h', help='lowest dim of height', default=4, type=int, metavar='INT')
     group.add_argument('--min_w', help='lowest dim of width', default=4, type=int, metavar='INT')
     group.add_argument('--res_log2', help='multiplier for image size, the training image size (height, width) should be (min_h * 2**res_log2, min_w * 2**res_log2)', default=4, type=int, metavar='INT')
@@ -566,7 +557,7 @@ def main():
     group.add_argument('--metricdata', help='Dataset to evaluate metrics against (optional)', metavar='PATH')
 
     group = parser.add_argument_group('base config')
-    group.add_argument('--cfg',   help='Base config (default: auto)', choices=['v100_16gb', 'auto', 'stylegan2', 'paper256', 'paper512', 'paper1024', 'cifar', 'cifarbaseline'])
+    group.add_argument('--cfg',   help='Base config (default: auto)', choices=['atari', 'large', 'v100_16gb', 'auto', 'stylegan2', 'paper256', 'paper512', 'paper1024', 'cifar', 'cifarbaseline'])
     group.add_argument('--gamma', help='Override R1 gamma', type=float, metavar='FLOAT')
     group.add_argument('--kimg',  help='Override training duration', type=int, metavar='INT')
 
