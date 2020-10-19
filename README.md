@@ -1,3 +1,6 @@
+seed117.jpg
+![alium image](./docs/seed117.jpg)
+
 ## Updates from the original repo (proceed with caution):
 
 * **Rectangular shapes other than squares now supported**:<br>
