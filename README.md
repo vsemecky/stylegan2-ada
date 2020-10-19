@@ -1,5 +1,4 @@
-seed117.jpg
-![alium image](./docs/seed117.jpg)
+![alium image](./docs/seed59.jpg)
 
 ## Updates from the original repo (proceed with caution):
 
