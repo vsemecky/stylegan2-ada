@@ -19,6 +19,10 @@
 * **Resume from latest checkpoint**:<br> 
     
     Use --resume="latest" to continue training from the last checkpoint.<br>
+
+* **Resume with initial aug probability value 'p'**:<br> 
+    
+    Use --aug_int=float where float has a positive value from zero. example: --aug_init=0.6<br>     
     
 * **Image snapshot grids saved as JPGs**:<br>
 
