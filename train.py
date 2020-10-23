@@ -55,6 +55,7 @@ def setup_training_options(
 
     # Discriminator augmentation.
     aug        = None, # Augmentation mode: 'ada' (default), 'noaug', 'fixed', 'adarv'
+    aug_init = None,
     p          = None, # Specify p for 'fixed' (required): <float>
     target     = None, # Override ADA target for 'ada' and 'adarv': <float>, default = depends on aug
     augpipe    = None, # Augmentation pipeline: 'blit', 'geom', 'color', 'filter', 'noise', 'cutout', 'bg', 'bgc' (default), ..., 'bgcfnc'
@@ -167,7 +168,7 @@ def setup_training_options(
 
     cfg_specs = {
         'atari':     dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=0.5,   lrate=0.002,  gamma=1,   ema=20,  ramp=None, map=8),
-        'large':     dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
+        'large':     dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
         'v100_16gb':     dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8), # uses mixed-precision, 11GB GPU
         'auto':          dict(ref_gpus=-1, kimg=25000,  mb=-1, mbstd=-1, fmaps=-1,  lrate=-1,     gamma=-1,   ema=-1,  ramp=0.05, map=2), # populated dynamically based on 'gpus' and 'res'
         'stylegan2':     dict(ref_gpus=8,  kimg=25000,  mb=32, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8), # uses mixed-precision, unlike original StyleGAN2
@@ -265,6 +266,10 @@ def setup_training_options(
             raise UserError('--p must be between 0 and 1')
         desc += f'-p{p:g}'
         args.augment_args.initial_strength = p
+
+    if aug_init is not None:
+        assert isinstance(aug_init, float)
+        args.augment_args.initial_strength = aug_init
 
     if target is not None:
         assert isinstance(target, float)
@@ -564,6 +569,7 @@ def main():
     group = parser.add_argument_group('discriminator augmentation')
     group.add_argument('--aug',    help='Augmentation mode (default: ada)', choices=['noaug', 'ada', 'fixed', 'adarv'])
     group.add_argument('--p',      help='Specify augmentation probability for --aug=fixed', type=float, metavar='FLOAT')
+    group.add_argument('--aug_init',      help='Specify initial augmentation probability', type=float, metavar='FLOAT')
     group.add_argument('--target', help='Override ADA target for --aug=ada and --aug=adarv', type=float)
     group.add_argument('--augpipe', help='Augmentation pipeline (default: bgc)', choices=['blit', 'geom', 'color', 'filter', 'noise', 'cutout', 'bg', 'bgc', 'bgcf', 'bgcfn', 'bgcfnc'])
 
