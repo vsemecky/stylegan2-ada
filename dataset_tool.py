@@ -685,6 +685,23 @@ def create_celeba(tfrecord_dir, celeba_dir, cx=89, cy=121):
             img = img.transpose(2, 0, 1) # HWC => CHW
             tfr.add_image(img)
 
+# ----------------------------------------------------------------------------
+def _get_all_files_2(path):
+    return_list = list()
+    for (dirpath, dirnames, filenames) in os.walk(path.encode('UTF-8')):
+        return_list += [os.path.join(dirpath, file) for file in filenames]
+    return return_list
+
+def _get_all_files(path):
+    if os.path.isfile(path):
+        return [path]
+
+    possible_files = sorted(glob.glob(os.path.join(path, "*")))
+    return_list = []
+    for possible_file in possible_files:
+        return_list.extend(_get_all_files(possible_file))
+    return return_list
+    
 #----------------------------------------------------------------------------
 
 def create_from_images(tfrecord_dir, image_dir, shuffle, res_log2=7, resize=None):
@@ -1049,7 +1066,7 @@ def execute_cmdline(argv):
         type=int,
         default=7
     )
-    
+
     p = add_command(    'create_from_hdf5', 'Create dataset from legacy HDF5 archive.',
                                             'create_from_hdf5 datasets/celebahq ~/downloads/celeba-hq-1024x1024.h5')
     p.add_argument(     'tfrecord_dir',     help='New dataset directory to be created')
