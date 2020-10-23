@@ -1025,6 +1025,31 @@ def execute_cmdline(argv):
     p.add_argument(     '--shuffle',        help='Randomize image order (default: 1)', type=int, default=1)
     p.add_argument(     '--res_log2',       help="image width and height should be multiple of 2**res_log2 (default: 7)", type=int, default=7)
 
+    p = add_command(
+        "create_from_images_raw",
+        "Create dataset from a directory full of images. Please be careful"
+        "since the tool recursively searches inside every sub-directory for image files",
+        "create_from_images_raw datasets/mydataset myimagedir",
+    )
+    p.add_argument("tfrecord_dir", help="New dataset directory to be created")
+    p.add_argument("image_dir", help="Directory containing the images")
+    p.add_argument(
+        "--resize",
+        help="resize to given power of 2 sized square images (default: None)",
+        type=int,
+        default=None,
+        required=False
+    )
+    p.add_argument(
+        "--shuffle", help="Randomize image order (default: 1)", type=int, default=1
+    )
+    p.add_argument(
+        "--res_log2",
+        help="image width and height should be multiple of 2**res_log2 (default: 7)",
+        type=int,
+        default=7
+    )
+    
     p = add_command(    'create_from_hdf5', 'Create dataset from legacy HDF5 archive.',
                                             'create_from_hdf5 datasets/celebahq ~/downloads/celeba-hq-1024x1024.h5')
     p.add_argument(     'tfrecord_dir',     help='New dataset directory to be created')
