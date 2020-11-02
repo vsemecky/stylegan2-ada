@@ -8,7 +8,9 @@
     
     384x256 = min_h = 2, min_w = 3, res_log2 = 7<br>
     640x384 = min_h = 3, min_w = 5, res_log2 = 7<br>
-    512x640 = min_h = 5, min_w= 4, res_log2 = 7<br> 
+    512x512 = min_h = 4, min_w= 4, res_log2 = 7<br>
+    512x640 = min_h = 5, min_w= 4, res_log2 = 7<br>
+    1024x1024 = min_h = 4, min_w= 4, res_log2 = 8<br>
     1280x768 = min_h = 3, min_w = 5, res_log2 = 8<br>
     
     NOTE: The 'auto' config does now work but ymmv. It uses the longest side as the resolution to base the mb size. Use 'v100_16gb' or one of the others for a more stylegan2 'f' config. It's also easy to create your own config by editing train.py file.<br>
