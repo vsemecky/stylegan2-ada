@@ -729,6 +729,8 @@ def create_from_images(tfrecord_dir, image_dir, shuffle, res_log2=7, resize=None
         )
         print("Adding the images to tfrecords ...")
         for idx in range(order.size):
+            if idx % 1000 == 0:
+                print ("added images", idx)
             img = np.asarray(PIL.Image.open(image_filenames[order[idx]]))
             if resize is not None:
                 size = int(2 ** resize)
