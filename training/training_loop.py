@@ -331,6 +331,11 @@ def training_loop(
                 pkl = os.path.join(run_dir, f'network-snapshot-{cur_nimg // 1000:06d}.pkl')
                 with open(pkl, 'wb') as f:
                     pickle.dump((G, D, Gs), f)
+                # Update 'latest' snapshot
+                pkl_latest = os.path.join(run_dir, '../latest.pkl')
+                with open(pkl_latest, 'wb') as f:
+                    pickle.dump((G, D, Gs), f)
+
                 if len(metrics):
                     print('Evaluating metrics...')
                     for metric in metrics:
