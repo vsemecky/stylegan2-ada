@@ -174,9 +174,14 @@ def setup_training_options(
         'gpu16_mb44_lr2':  dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
         'gpu16_mb84_lr2':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
         'gpu16_mb88_lr2':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=8,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
+
         'gpu16_mb44_lr3':  dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.003,  gamma=10,   ema=10,  ramp=None, map=8),
         'gpu16_mb84_lr3':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=1,   lrate=0.003,  gamma=10,   ema=10,  ramp=None, map=8),
         'gpu16_mb88_lr3':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=8,  fmaps=1,   lrate=0.003,  gamma=10,   ema=10,  ramp=None, map=8),
+
+        'gpu16_mb44_lr4':  dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.004,  gamma=10,   ema=10,  ramp=None, map=8),
+        'gpu16_mb84_lr4':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=1,   lrate=0.004,  gamma=10,   ema=10,  ramp=None, map=8),
+        'gpu16_mb88_lr4':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=8,  fmaps=1,   lrate=0.004,  gamma=10,   ema=10,  ramp=None, map=8),
 
         'auto':            dict(ref_gpus=-1, kimg=25000,  mb=-1, mbstd=-1, fmaps=-1,  lrate=-1,     gamma=-1,   ema=-1,  ramp=0.05, map=2), # populated dynamically based on 'gpus' and 'res'
         'stylegan2':       dict(ref_gpus=8,  kimg=25000,  mb=32, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8), # uses mixed-precision, unlike original StyleGAN2
