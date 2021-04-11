@@ -167,22 +167,26 @@ def setup_training_options(
     desc += f'-{cfg}'
 
     cfg_specs = {
-        'atari':           dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=0.5,   lrate=0.002,  gamma=1,   ema=20,  ramp=None, map=8),
-        'large':           dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
 
         # Config for 16 GB cards (V100, P100, T4)
-        'gpu16_mb44_lr2':  dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
-        'gpu16_mb84_lr2':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
-        'gpu16_mb88_lr2':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=8,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
+        'gpu16_mb44_lr2':   dict(ref_gpus=1, kimg=25000, mb=4,  mbstd=4,  fmaps=1, lrate=0.002, gamma=10, ema=10, ramp=None, map=8),
+        'gpu16_mb84_lr2':   dict(ref_gpus=1, kimg=25000, mb=8,  mbstd=4,  fmaps=1, lrate=0.002, gamma=10, ema=10, ramp=None, map=8),
+        'gpu16_mb88_lr2':   dict(ref_gpus=1, kimg=25000, mb=8,  mbstd=8,  fmaps=1, lrate=0.002, gamma=10, ema=10, ramp=None, map=8),
+        'gpu16_mb1616_lr2': dict(ref_gpus=1, kimg=25000, mb=16, mbstd=16, fmaps=1, lrate=0.002, gamma=10, ema=10, ramp=None, map=8),
 
-        'gpu16_mb44_lr3':  dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.003,  gamma=10,   ema=10,  ramp=None, map=8),
-        'gpu16_mb84_lr3':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=1,   lrate=0.003,  gamma=10,   ema=10,  ramp=None, map=8),
-        'gpu16_mb88_lr3':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=8,  fmaps=1,   lrate=0.003,  gamma=10,   ema=10,  ramp=None, map=8),
+        'gpu16_mb44_lr3':   dict(ref_gpus=1, kimg=25000, mb=4,  mbstd=4,  fmaps=1, lrate=0.003, gamma=10, ema=10, ramp=None, map=8),
+        'gpu16_mb84_lr3':   dict(ref_gpus=1, kimg=25000, mb=8,  mbstd=4,  fmaps=1, lrate=0.003, gamma=10, ema=10, ramp=None, map=8),
+        'gpu16_mb88_lr3':   dict(ref_gpus=1, kimg=25000, mb=8,  mbstd=8,  fmaps=1, lrate=0.003, gamma=10, ema=10, ramp=None, map=8),
+        'gpu16_mb1616_lr3': dict(ref_gpus=1, kimg=25000, mb=16, mbstd=16, fmaps=1, lrate=0.003, gamma=10, ema=10, ramp=None, map=8),
 
-        'gpu16_mb44_lr4':  dict(ref_gpus=1,  kimg=25000,  mb=4, mbstd=4,  fmaps=1,   lrate=0.004,  gamma=10,   ema=10,  ramp=None, map=8),
-        'gpu16_mb84_lr4':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=1,   lrate=0.004,  gamma=10,   ema=10,  ramp=None, map=8),
-        'gpu16_mb88_lr4':  dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=8,  fmaps=1,   lrate=0.004,  gamma=10,   ema=10,  ramp=None, map=8),
+        'gpu16_mb44_lr4':   dict(ref_gpus=1, kimg=25000, mb=4,  mbstd=4,  fmaps=1, lrate=0.004, gamma=10, ema=10, ramp=None, map=8),
+        'gpu16_mb84_lr4':   dict(ref_gpus=1, kimg=25000, mb=8,  mbstd=4,  fmaps=1, lrate=0.004, gamma=10, ema=10, ramp=None, map=8),
+        'gpu16_mb88_lr4':   dict(ref_gpus=1, kimg=25000, mb=8,  mbstd=8,  fmaps=1, lrate=0.004, gamma=10, ema=10, ramp=None, map=8),
+        'gpu16_mb1616_lr4': dict(ref_gpus=1, kimg=25000, mb=16, mbstd=16, fmaps=1, lrate=0.004, gamma=10, ema=10, ramp=None, map=8),
 
+        # Original
+        'atari':           dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=0.5,   lrate=0.002,  gamma=1,   ema=20,  ramp=None, map=8),
+        'large':           dict(ref_gpus=1,  kimg=25000,  mb=8, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8),
         'auto':            dict(ref_gpus=-1, kimg=25000,  mb=-1, mbstd=-1, fmaps=-1,  lrate=-1,     gamma=-1,   ema=-1,  ramp=0.05, map=2), # populated dynamically based on 'gpus' and 'res'
         'stylegan2':       dict(ref_gpus=8,  kimg=25000,  mb=32, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8), # uses mixed-precision, unlike original StyleGAN2
         'paper256':        dict(ref_gpus=8,  kimg=25000,  mb=64, mbstd=8,  fmaps=0.5, lrate=0.0025, gamma=1,    ema=20,  ramp=None, map=8),
@@ -575,7 +579,7 @@ def main():
     group.add_argument('--metricdata', help='Dataset to evaluate metrics against (optional)', metavar='PATH')
 
     group = parser.add_argument_group('base config')
-    group.add_argument('--cfg',   help='Base config (default: auto)', choices=['gpu16_mb44_lr2', 'gpu16_mb84_lr2', 'gpu16_mb88_lr2', 'gpu16_mb44_lr3', 'gpu16_mb84_lr3', 'gpu16_mb88_lr3', 'atari', 'large', 'v100_16gb', 'auto', 'stylegan2', 'paper256', 'paper512', 'paper1024', 'cifar', 'cifarbaseline'])
+    group.add_argument('--cfg',   help='Base config (default: auto)', type=str)
     group.add_argument('--gamma', help='Override R1 gamma', type=float, metavar='FLOAT')
     group.add_argument('--kimg',  help='Override training duration', type=int, metavar='INT')
 
